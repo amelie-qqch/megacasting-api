@@ -7,8 +7,13 @@ use Symfony\Component\Routing\RequestContext;
 use Symfony\Component\Routing\RouteCollection;
 use Symfony\Component\Routing\Route;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\Generator\UrlGenerator;
+//use Symfony\Component\Routing\Generator\UrlGenerator;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
+
+//TODO Ou mettre la configuration de l'API : header type de retour etc etc 
+//TODO dans get/castings ne renvoi pas toutes les infos du castings
+//castings/{id} renvoie toutes les infos du casting voulu
+//TODO requête avec authentification
 
 try
 {
@@ -33,11 +38,37 @@ try
         ]
     );
     
+    $route3 = new Route(
+        '/api/castings/domaine={domaine}',
+        [
+            'controller' => My\Controller\CastingController::class,
+            'method'     => 'getCastingsByDomaine',
+        ],
+        [
+            'domaine' => '[a-zA-Z]+'
+        ]          
+    );
+    
+    $route4 = new Route(
+        '/api/castings/annonceur={anonceur}',
+        [
+            'controller' => My\Controller\CastingController::class,
+            'method'     => 'getCastingsByAnnonceur',
+        ],
+        [
+            'annonceur' => '[a-zA-Z]+'
+        ]          
+    );
+    
  
     // Add Route object(s) to RouteCollection object
     $routes = new RouteCollection();
     $routes->add('api_castings', $route1);
     $routes->add('api_casting', $route2);
+    $routes->add('api_castingsByDomaine', $route3);
+    $routes->add('api_castingsByAnnonceur', $route4);
+    
+    
  
     // Init RequestContext object
     $context = new RequestContext();
