@@ -2,6 +2,8 @@
 
 namespace My\Config;
 
+use PDO;
+
 class Database{
     //TODO Gestion du mdp
     private $host = 'localhost\sqlexpress';

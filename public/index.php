@@ -7,7 +7,7 @@ use Symfony\Component\Routing\RequestContext;
 use Symfony\Component\Routing\RouteCollection;
 use Symfony\Component\Routing\Route;
 use Symfony\Component\HttpFoundation\Request;
-//use Symfony\Component\Routing\Generator\UrlGenerator;
+use Symfony\Component\Routing\Generator\UrlGenerator;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
 
 //TODO Ou mettre la configuration de l'API : header type de retour etc etc 
@@ -22,7 +22,7 @@ try
       '/api/castings',
       [
           'controller' => My\Controller\CastingController::class,
-          'method'     => 'getCastings'
+          'method'     => 'getCastings',
       ]
     );
  

@@ -13,28 +13,30 @@ class CastingController {
         return $db;
     }
     
+    //Regrouper toutes les queries ensemble et tout les GETS ensemble ou bien regrouper par routes (la query avec le get correspondant?)
     
-    //Queries
+    ##Queries
+    // Il faut utiliser les alias dans les requêtes afin d'éviter une confusion dans les fonctions Get car certains nom de colonnes reviennent dans plusieurs tables
     private function queryCasting($id){
         $db = $this->getDatabase();
         $query = sprintf("
             SELECT 
-                ID_CAS, 
-                LIB_CAS, 
-                DAT_DEB_CON_CAS, 
-                NB_POS_CAS, 
-                DES_POS_CAS, 
-                DES_PRO_CAS,
-                TYPE_CON_CAS,
-                LIEU_CON_CAS,
-                LIB_ANN,
-                NOM_CON_ANN,
-                PRE_CON_ANN,
-                MAIL_CON_ANN                          
+                Casting.Identifiant, 
+                Casting.Libelle, 
+                Date_Debut_Contrat, 
+                Nb_Poste, 
+                Description_Poste, 
+                Description_Profil,
+                Type_Contrat,
+                Adresse_Contrat,
+                Annonceur.Libelle as 'Annonceur',
+                Annonceur.Nom_Contact as 'Nom Contact Annonceur',
+                Annonceur.Prenom_Contact as 'Prenom Contact Annonceur',
+                Annonceur.Mail_Contact as 'Mail Contact Annonceur'                        
             FROM Casting
             LEFT JOIN Annonceur
-            ON Casting.ANN_CAS=Annonceur.ID_ANN
-            WHERE ID_CAS = :id;"
+            ON Casting.Annonceur = Annonceur.Identifiant
+            WHERE Casting.Identifiant = :id;"
         );
         try{
             $stmt = $db->prepare($query);
@@ -50,14 +52,14 @@ class CastingController {
         $db = $this->getDatabase();
         $query = sprintf("
             SELECT 
-                ID_CAS, 
-                LIB_CAS,
-                TYPE_CON_CAS,
-                LIEU_CON_CAS,
-                LIB_ANN
+                Casting.Identifiant, 
+                Casting.Libelle,
+                Type_Contrat,
+                Casting.Adresse_Contrat,
+                Annonceur.Libelle as 'Annonceur'
             FROM Casting 
             LEFT JOIN Annonceur
-            ON Casting.ANN_CAS=Annonceur.ID_ANN;"
+            ON Casting.Annonceur = Annonceur.Identifiant;"
         );
         try{
             $stmt = $db->prepare($query);
@@ -72,14 +74,14 @@ class CastingController {
         $db = $this->getDatabase();
         $query = sprintf("
             SELECT 
-                LIB_CAS, 
-                LIB_MET
+                Casting.Libelle as 'Casting', 
+                Domaine.Libelle as 'Domaine'
             FROM Casting
                 LEFT JOIN Metier
-                ON MET_CAS = ID_MET
+                ON Casting.Metier = Metier.Identifiant
                 LEFT JOIN Domaine
-                ON Metier.DOM_MET = Domaine.ID_DOM
-            WHERE Domaine.LIB_DOM = :domaine;"            
+                ON Metier.Domaine = Domaine.Identifiant
+            WHERE Domaine.Libelle = :domaine;"            
         ); 
         try{
             $stmt = $db->prepare($query);
@@ -95,11 +97,11 @@ class CastingController {
     private function queryCastingByAnnonceur($annonceur){
         $db = $this->getDatabase();
         $query = sprintf("
-            SELECT LIB_CAS
+            SELECT Casting.Libelle
             FROM Casting
                 LEFT JOIN Annonceur
-                ON Casting.ANN_CAS = Annonceur.ID_ANN
-            WHERE Annonceur.LIB_ANN = :annonceur;"      
+                ON Casting.Annonceur = Annonceur.Identifiant
+            WHERE Annonceur.Libelle = :annonceur;"      
         );
         try{
             $stmt = $db->prepare($query);
@@ -114,29 +116,30 @@ class CastingController {
     
     
     //Gets
+    
+
     public function getCastings()
     {
         $castings = array();
+        //NE PAS OUBLIER DE DONNER UN NOM? AU TABLEAU SINON NULL PARAMETRE
         $castings["castings"]=array();
         $stmtCasting = $this->queryCastings();
         while($row = $stmtCasting->fetch(PDO::FETCH_ASSOC)){
 
-        $casting_item=array(
-            "id"                => $row['ID_CAS'],
-            "libelleCasting"    => $row['LIB_CAS'],
-            "typeContrat"       => $row['TYPE_CON_CAS'],
-            "lieuContrat"       => $row['LIEU_CON_CAS'],
-            "libelleAnnonceur"  => $row['LIB_ANN'],
-        );
+            $casting_item=array(
+                "id"                => $row['Identifiant'],
+                "libelleCasting"    => $row['Libelle'],
+                "typeContrat"       => $row['Type_Contrat'],
+                "lieuContrat"       => $row['Adresse_Contrat'],
+                "libelleAnnonceur"  => $row['Annonceur']
+            );
         
-        array_push($castings["castings"], $casting_item);
+            array_push($castings["castings"], $casting_item);
         }
         
-        echo json_encode($castings);
         //echo json_last_error_msg();
 
-        //inutile du coup 
-        //return json_encode($castings);
+        echo json_encode($castings);
 
     }
     
@@ -144,26 +147,26 @@ class CastingController {
     public function getCasting($id)
     {
         $casting = array();
-        $casting["casting N° ".$id]=array();
+        $casting["castings"]=array();
         $stmtCasting = $this->queryCasting($id);
         while($row = $stmtCasting->fetch(PDO::FETCH_ASSOC)){
 
             $casting_item=array(
-                "id"                        => $row['ID_CAS'],
-                "libelle"                   => $row['LIB_CAS'],
-                "dateDebutContrat"          => $row['DAT_DEB_CON_CAS'],
-                "nbPostes"                  => $row['NB_POS_CAS'],
-                "descriptionPoste"          => $row['DES_POS_CAS'],
-                "descriptionProfilt"        => $row['DES_PRO_CAS'],
-                "typeContrat"               => $row['TYPE_CON_CAS'],
-                "lieuContrat"               => $row['LIEU_CON_CAS'],
-                "libelleAnnonceur"          => $row['LIB_ANN'],
-                "nomContactAnnonceur"       => $row['NOM_CON_ANN'],
-                "prenomContactAnnocneur"    => $row['PRE_CON_ANN'],
-                "mailContactAnnonceur"      => $row['MAIL_CON_ANN']
+                "id"                        => $row['Identifiant'],
+                "libelle"                   => $row['Libelle'],
+                "dateDebutContrat"          => $row['Date_Debut_Contrat'],
+                "nbPostes"                  => $row['Nb_Poste'],
+                "descriptionPoste"          => $row['Description_Poste'],
+                "descriptionProfilt"        => $row['Description_Profil'],
+                "typeContrat"               => $row['Type_Contrat'],
+                "lieuContrat"               => $row['Adresse_Contrat'],
+                "libelleAnnonceur"          => $row['Annonceur'],
+                "nomContactAnnonceur"       => $row['Nom Contact Annonceur'],
+                "prenomContactAnnocneur"    => $row['Prenom Contact Annonceur'],
+                "mailContactAnnonceur"      => $row['Mail Contact Annonceur']
             );
 
-            array_push($casting["casting N° ".$id], $casting_item);
+            array_push($casting["castings"], $casting_item);
         }
         
         echo json_encode($casting);
@@ -177,8 +180,8 @@ class CastingController {
         while($row = $stmtCasting->fetch(PDO::FETCH_ASSOC)){
             
             $casting_item = array(
-                "libelleCasting"    => $row['LIB_CAS'], 
-                "libelleMetier"     => $row['LIB_MET'],                 
+                "libelleCasting"    => $row['Casting'], 
+                "libelleMetier"     => $row['Domaine']                 
             );
             
             array_push($castings["casting domaine : ".$domaine], $casting_item);
@@ -194,7 +197,7 @@ class CastingController {
         
         while($row = $stmtCasting->fetch(PDO::FETCH_ASSOC)){
             $casting_item = array(
-                "libelleCasting"    => $row['LIB_CAS']
+                "libelleCasting"    => $row['Libelle']
             );
             
             array_push($castings["casting annonceur : ".$annonceur], $casting_item);
