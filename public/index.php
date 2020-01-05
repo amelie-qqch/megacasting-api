@@ -19,10 +19,13 @@ try
 {
     // Init basic route
     $route1 = new Route(
-      '/api/castings',
+      '/api/castings/p={pageCourante}',
       [
           'controller' => My\Controller\CastingController::class,
           'method'     => 'getCastings',
+      ],
+      [
+           'pageCourante' => '[0-9]+'
       ]
     );
  
@@ -60,6 +63,14 @@ try
         ]          
     );
     
+    $route5 = new Route(
+        '/api/castings/count',
+        [
+            'controller' => My\Controller\CastingController::class,
+            'method'     => 'getCount',
+        ]         
+    );
+    
  
     // Add Route object(s) to RouteCollection object
     $routes = new RouteCollection();
@@ -67,6 +78,7 @@ try
     $routes->add('api_casting', $route2);
     $routes->add('api_castingsByDomaine', $route3);
     $routes->add('api_castingsByAnnonceur', $route4);
+    $routes->add('api_countCasting', $route5);
     
     
  
