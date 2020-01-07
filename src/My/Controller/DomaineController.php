@@ -38,7 +38,7 @@ class DomaineController {
     ##Gets
     public function getDomaines(){
         $domaines = array();
-        $domaines["domaines "] = array();
+        $domaines["domaines"] = array();
         $stmtDomaines = $this->queryDomaines();
         while($row=$stmtDomaines->fetch(PDO::FETCH_ASSOC)){
             $domaines_item=array(

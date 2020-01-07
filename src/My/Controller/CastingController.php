@@ -6,7 +6,8 @@ use My\Config\Database;
 use PDO;
 
 class CastingController {
-    const ITEM_PAR_PAGE = 10;
+    //9 articles par page car ligne de 3 items
+    const ITEM_PAR_PAGE = 9;
     
     private function getDatabase(){
         $database = new Database();
@@ -32,10 +33,35 @@ class CastingController {
             echo $ex;
         }
         $stmt = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $stmt['nbCastings'];
         
-        
+        return $stmt['nbCastings'];   
     }
+    
+    private function countItemByDomain($domaine){
+        $db = $this->getDatabase();
+        
+        $query = sprintf("
+            SELECT COUNT(Casting.Identifiant) as 'nbCastings'
+            FROM Casting
+            LEFT JOIN Metier
+            ON Casting.Metier = Metier.Identifiant
+            LEFT JOIN Domaine
+            ON Metier.Domaine = Domaine.Identifiant
+            WHERE Domaine.Libelle = :domaine;
+             ");
+        try{
+            //$str = '\''.$domaine.'\'';
+            $stmt = $db->prepare($query);
+            $stmt->bindParam(':domaine',$domaine, PDO::PARAM_STR); 
+            $stmt->execute();
+        } catch (PDOException $ex) {
+            echo $ex;
+        }
+        $stmt = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        return $stmt['nbCastings'];   
+    }
+    
     // Il faut utiliser les alias dans les requêtes afin d'éviter une confusion dans les fonctions Get car certains nom de colonnes reviennent dans plusieurs tables    
     private function queryCastings($pageCourante){
         $db = $this->getDatabase();
@@ -49,10 +75,16 @@ class CastingController {
                 Nb_Poste,
                 Type_Contrat,
                 Casting.Adresse_Contrat,
+                Metier.Libelle as 'Metier',
+                Domaine.Libelle as 'Domaine',
                 Annonceur.Libelle as 'Annonceur'
             FROM Casting 
             LEFT JOIN Annonceur
             ON Casting.Annonceur = Annonceur.Identifiant
+            LEFT JOIN Metier
+            ON Casting.Metier = Metier.Identifiant
+            LEFT JOIN Domaine
+            ON Metier.Domaine = Domaine.Identifiant
             ORDER BY Casting.Identifiant ASC
             OFFSET :limite ROWS FETCH NEXT :parPage ROWS ONLY;"
         );
@@ -61,6 +93,38 @@ class CastingController {
             $stmt->bindParam(':limite',$limite, PDO::PARAM_INT);
             //Utiliser bindValue pour une constante (pas une ref)
             $stmt->bindValue(':parPage',self::ITEM_PAR_PAGE, PDO::PARAM_INT);
+            $stmt->execute();
+        } catch (PDOException $ex) {
+            echo $ex;
+        }
+        return $stmt;
+    }
+    
+    private function queryLastCastings(){
+        $db = $this->getDatabase();        
+        $query = sprintf("
+            SELECT 
+                TOP 10
+                Casting.Identifiant, 
+                Casting.Libelle,
+                Casting.Date_Debut_Publication,
+                Nb_Poste,
+                Type_Contrat,
+                Casting.Adresse_Contrat,
+                Metier.Libelle as 'Metier',
+                Domaine.Libelle as 'Domaine',
+                Annonceur.Libelle as 'Annonceur'
+            FROM Casting 
+            LEFT JOIN Annonceur
+            ON Casting.Annonceur = Annonceur.Identifiant
+            LEFT JOIN Metier
+            ON Casting.Metier = Metier.Identifiant
+            LEFT JOIN Domaine
+            ON Metier.Domaine = Domaine.Identifiant
+            ORDER BY Casting.Date_Debut_Publication DESC"
+        );
+        try{
+            $stmt = $db->prepare($query);
             $stmt->execute();
         } catch (PDOException $ex) {
             echo $ex;
@@ -102,22 +166,38 @@ class CastingController {
     }
 
     
-    private function queryCastingByDomain($domaine){
+    private function queryCastingByDomain($domaine, $pageCourante){
         $db = $this->getDatabase();
+        $limite = (($pageCourante-1)*self::ITEM_PAR_PAGE);
         $query = sprintf("
             SELECT 
-                Casting.Libelle as 'Casting', 
-                Domaine.Libelle as 'Domaine'
-            FROM Casting
-                LEFT JOIN Metier
-                ON Casting.Metier = Metier.Identifiant
-                LEFT JOIN Domaine
-                ON Metier.Domaine = Domaine.Identifiant
-            WHERE Domaine.Libelle = :domaine;"            
+                Casting.Identifiant, 
+                Casting.Libelle,
+                Casting.Date_Debut_Publication,
+                Nb_Poste,
+                Type_Contrat,
+                Casting.Adresse_Contrat,
+		Metier.Libelle as 'Metier',
+                Domaine.Libelle as 'Domaine',
+                Annonceur.Libelle as 'Annonceur'
+            FROM Casting 
+            LEFT JOIN Annonceur
+            ON Casting.Annonceur = Annonceur.Identifiant
+            LEFT JOIN Metier
+            ON Casting.Metier = Metier.Identifiant
+            LEFT JOIN Domaine
+            ON Metier.Domaine = Domaine.Identifiant
+            WHERE Domaine.Libelle = :domaine
+            ORDER BY Casting.Identifiant ASC
+            OFFSET :limite ROWS FETCH NEXT :parPage ROWS ONLY;"            
         ); 
+        //echo $query;
         try{
             $stmt = $db->prepare($query);
             $stmt->bindParam(':domaine',$domaine, PDO::PARAM_STR); 
+            $stmt->bindParam(':limite',$limite, PDO::PARAM_INT);
+            //Utiliser bindValue pour une constante (pas une ref)
+            $stmt->bindValue(':parPage',self::ITEM_PAR_PAGE, PDO::PARAM_INT);
             $stmt->execute();
             
         } catch (PDOException $ex) {
@@ -167,6 +247,38 @@ class CastingController {
                 "nbPoste"           => $row['Nb_Poste'],
                 "typeContrat"       => $row['Type_Contrat'],
                 "lieuContrat"       => $row['Adresse_Contrat'],
+                "metier"            => $row['Metier'],
+                "domaine"           => $row['Domaine'],
+                "libelleAnnonceur"  => $row['Annonceur']
+            );
+        
+            array_push($castings["castings"], $casting_item);
+        }
+        
+        //echo json_last_error_msg();
+       // echo $nbItems;
+        echo json_encode($castings);
+
+    }
+    
+    
+        public function getLastCastings()
+    {       
+        $castings = array();
+        //NE PAS OUBLIER DE DONNER UN NOM? AU TABLEAU SINON NULL PARAMETRE
+        $castings["castings"]=array();
+        $stmtCasting = $this->queryLastCastings();
+        while($row = $stmtCasting->fetch(PDO::FETCH_ASSOC)){
+
+            $casting_item=array(
+                "id"                => $row['Identifiant'],
+                "libelleCasting"    => $row['Libelle'],
+                "datePublication"   => $row['Date_Debut_Publication'],
+                "nbPoste"           => $row['Nb_Poste'],
+                "typeContrat"       => $row['Type_Contrat'],
+                "lieuContrat"       => $row['Adresse_Contrat'],
+                "metier"            => $row['Metier'],
+                "domaine"           => $row['Domaine'],
                 "libelleAnnonceur"  => $row['Annonceur']
             );
         
@@ -183,7 +295,7 @@ class CastingController {
     public function getCasting($id)
     {
         $casting = array();
-        $casting["castings"]=array();
+        $casting["casting"]=array();
         $stmtCasting = $this->queryCasting($id);
         while($row = $stmtCasting->fetch(PDO::FETCH_ASSOC)){
 
@@ -193,7 +305,7 @@ class CastingController {
                 "dateDebutContrat"          => $row['Date_Debut_Contrat'],
                 "nbPostes"                  => $row['Nb_Poste'],
                 "descriptionPoste"          => $row['Description_Poste'],
-                "descriptionProfilt"        => $row['Description_Profil'],
+                "descriptionProfil"         => $row['Description_Profil'],
                 "typeContrat"               => $row['Type_Contrat'],
                 "lieuContrat"               => $row['Adresse_Contrat'],
                 "libelleAnnonceur"          => $row['Annonceur'],
@@ -202,27 +314,39 @@ class CastingController {
                 "mailContactAnnonceur"      => $row['Mail Contact Annonceur']
             );
 
-            array_push($casting["castings"], $casting_item);
+            array_push($casting["casting"], $casting_item);
         }
-        
+        //var_dump($casting);
         echo json_encode($casting);
     }
     
-    public function getCastingsByDomaine ($domaine){
+    public function getCastingsByDomaine ($domaine, $pageCourante){
+        $nbItems = $this->countItemByDomain($domaine);
+        $nbPage = ceil($nbItems/ self::ITEM_PAR_PAGE);
         $castings = array();
-        $castings["casting domaine : ".$domaine]=array();
-        $stmtCasting = $this->queryCastingByDomain($domaine);
-        
+        $castings["castings"]=array();
+        $castings["nbPages"]=$nbPage;
+        $stmtCasting = $this->queryCastingByDomain($domaine, $pageCourante);
         while($row = $stmtCasting->fetch(PDO::FETCH_ASSOC)){
-            
-            $casting_item = array(
-                "libelleCasting"    => $row['Casting'], 
-                "libelleMetier"     => $row['Domaine']                 
+
+            $casting_item=array(
+                "id"                => $row['Identifiant'],
+                "libelleCasting"    => $row['Libelle'],
+                "datePublication"   => $row['Date_Debut_Publication'],
+                "nbPoste"           => $row['Nb_Poste'],
+                "typeContrat"       => $row['Type_Contrat'],
+                "lieuContrat"       => $row['Adresse_Contrat'],
+                "metier"            => $row['Metier'],
+                "domaine"           => $row['Domaine'],
+                "libelleAnnonceur"  => $row['Annonceur']
             );
-            
-            array_push($castings["casting domaine : ".$domaine], $casting_item);
+        
+            array_push($castings["castings"], $casting_item);
         }
         
+        //echo json_last_error_msg();
+       // var_dump($castings);
+       // echo $nbItems;
         echo json_encode($castings);
     }
     

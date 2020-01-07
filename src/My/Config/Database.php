@@ -1,15 +1,15 @@
 <?php
-
 namespace My\Config;
 
 use PDO;
 
 class Database{
+    
     //TODO Gestion du mdp
     private $host = 'localhost\sqlexpress';
     private $db_name = "MegaProductionBDD";
     private $username = "MegaProduction_Admin";
-    private $password = "Not24get";
+    private $password = "Not24Get";
     public $connection;
     
     /**
@@ -30,5 +30,8 @@ class Database{
         
         return $this->connection;
     }
+    
+
+
 }
 
