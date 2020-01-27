@@ -34,9 +34,9 @@ class AnnonceurController {
     
     
     ##Gets
-    public function getAnnonceur(){
+    public function getAnnonceurs(){
         $annonceurs = array();
-        $annonceurs["annonceurs "] = array();
+        $annonceurs["annonceurs"] = array();
         $stmtAnnonceurs = $this->queryAnnonceur();
         while($row=$stmtAnnonceurs->fetch(PDO::FETCH_ASSOC)){
             $annonceurs_item=array(

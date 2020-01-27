@@ -14,17 +14,29 @@ use Symfony\Component\Routing\Exception\ResourceNotFoundException;
 
 try
 {
+    
     // Init basic route
     $route1 = new Route(
       '/api/castings/p={pageCourante}',
       [
           'controller' => My\Controller\CastingController::class,
           'method'     => 'getCastings',
-      ],
+      ], 
       [
            'pageCourante' => '[0-9]+'
       ]
     );
+    
+//        $route1 = new Route(
+//      '/api/id={email}:pswd={pswd}/castings/p={pageCourante}',
+//      [
+//          'controller' => My\Controller\CastingController::class,
+//          'method'     => 'getCastings',
+//      ], 
+//      [
+//           'pageCourante' => '[0-9]+'
+//      ]
+//    );
  
     // Init route with dynamic placeholders
     $route2 = new Route(
@@ -53,21 +65,24 @@ try
     );
     
     $route4 = new Route(
-        '/api/castings/annonceur={anonceur}',
+        '/api/castings/annonceur={annonceur}/p={pageCourante}',
         [
             'controller' => My\Controller\CastingController::class,
             'method'     => 'getCastingsByAnnonceur',
         ],
         [
             'annonceur' => '[a-zA-Z]+'
-        ]          
+        ],
+        [
+           'pageCourante' => '[0-9]+'
+        ]            
     );
     
     $route5 = new Route(
-        '/api/castings/count',
+        '/api/annonceurs',
         [
-            'controller' => My\Controller\CastingController::class,
-            'method'     => 'getCount',
+            'controller' => My\Controller\AnnonceurController::class,
+            'method'     => 'getAnnonceurs',
         ]         
     );
     
@@ -87,6 +102,17 @@ try
       ]
     );
     
+    $route8 = new Route(
+      '/api/castings/search={recherche}',
+      [
+          'controller' => My\Controller\CastingController::class,
+          'method'     => 'getCastingsSearch',
+      ],
+      [
+          'recherche' => '[a-zA-Z]+'
+      ]
+    );
+    
  
     // Add Route object(s) to RouteCollection object
     $routes = new RouteCollection();
@@ -94,9 +120,10 @@ try
     $routes->add('api_casting', $route2);
     $routes->add('api_castingsByDomaine', $route3);
     $routes->add('api_castingsByAnnonceur', $route4);
-    $routes->add('api_countCastings', $route5);
+    $routes->add('api_annonceurs', $route5);
     $routes->add('api_lastCastings', $route6);
     $routes->add('api_domaines', $route7);
+    $routes->add('api_castingSearch',$route8);
     
     
  
