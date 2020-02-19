@@ -15,7 +15,7 @@ use Symfony\Component\Routing\Exception\ResourceNotFoundException;
 try
 {
     
-    // Init basic route
+    ## Routes Castings
     $route1 = new Route(
       '/api/castings/p={pageCourante}',
       [
@@ -60,7 +60,7 @@ try
             'domaine' => '[a-zA-Z]+'
         ],
         [
-           'pageCourante' => '[0-9]+'
+            'pageCourante' => '[0-9]+'
         ]          
     );
     
@@ -74,27 +74,69 @@ try
             'annonceur' => '[a-zA-Z]+'
         ],
         [
-           'pageCourante' => '[0-9]+'
+            'pageCourante' => '[0-9]+'
         ]            
     );
     
     $route5 = new Route(
-        '/api/annonceurs',
+        '/api/castings',
         [
-            'controller' => My\Controller\AnnonceurController::class,
-            'method'     => 'getAnnonceurs',
-        ]         
+            'controller' => My\Controller\CastingController::class,
+            'method'     => 'getLastCastings',
+        ]
     );
     
     $route6 = new Route(
-      '/api/castings',
-      [
-          'controller' => My\Controller\CastingController::class,
-          'method'     => 'getLastCastings',
-      ]
+        '/api/castings/count',
+        [
+            'controller' => My\Controller\CastingController::class,
+            'method'     => 'getCountCastings',
+        ]
     );
     
+    ## Routes Annonceur
     $route7 = new Route(
+        '/api/annonceurs',
+        [
+            'controller' => My\Controller\AnnonceurController::class,
+            'method'     => 'getAnnonceursLibelle',
+        ]         
+    );
+    
+    $route8 = new Route(
+        '/api/annonceurs/p={pageCourante}' ,
+        [
+            'controller'    =>  My\Controller\AnnonceurController::class,
+            'method'        =>  'getAnnonceurs'
+        ],
+            [
+           'pageCourante' => '[0-9]+'
+        ] 
+       
+    );
+    $route9 = new Route(
+        '/api/annonceur/id={id}' ,
+        [
+            'controller'    =>  My\Controller\AnnonceurController::class,
+            'method'        =>  'getAnnonceur'
+        ],
+        [
+           'id' => '[0-9]+'
+        ] 
+       
+    );
+    
+    $route10 = new Route(
+        '/api/annonceurs/count',
+        [
+            'controller' => My\Controller\AnnonceurController::class,
+            'method'     => 'getCountAnnonceurs',
+        ]
+    );
+    
+    ## Routes Domaine
+    
+    $route11 = new Route(
       '/api/domaines',
       [
           'controller' => My\Controller\DomaineController::class,
@@ -102,17 +144,26 @@ try
       ]
     );
     
-    $route8 = new Route(
-      '/api/castings/search={recherche}',
-      [
-          'controller' => My\Controller\CastingController::class,
-          'method'     => 'getCastingsSearch',
-      ],
-      [
-          'recherche' => '[a-zA-Z]+'
-      ]
+    $route12 = new Route(
+        '/api/castings/search={recherche}',
+        [
+            'controller' => My\Controller\CastingController::class,
+            'method'     => 'getCastingsSearch',
+        ],
+        [
+            'recherche' => '[a-zA-Z]+'
+        ]
     );
     
+    ## Routes Metiers
+    
+    $route13 = new Route(
+        '/api/metiers/count',
+        [
+            'controller' => My\Controller\MetierController::class,
+            'method'     => 'getCountMetiers',
+        ]
+    );
  
     // Add Route object(s) to RouteCollection object
     $routes = new RouteCollection();
@@ -120,10 +171,15 @@ try
     $routes->add('api_casting', $route2);
     $routes->add('api_castingsByDomaine', $route3);
     $routes->add('api_castingsByAnnonceur', $route4);
-    $routes->add('api_annonceurs', $route5);
-    $routes->add('api_lastCastings', $route6);
-    $routes->add('api_domaines', $route7);
-    $routes->add('api_castingSearch',$route8);
+    $routes->add('api_lastCastings', $route5);
+    $routes->add('api_countCastings', $route6);
+    $routes->add('api_annonceursLibelle', $route7);
+    $routes->add('api_annonceurs', $route8);
+    $routes->add('api_annonceur',$route9);
+    $routes->add('api_countAnnonceurs', $route10);
+    $routes->add('api_domaines', $route11);
+    $routes->add('api_castingSearch',$route12);
+    $routes->add('api_castingSearch',$route13);
     
     
  

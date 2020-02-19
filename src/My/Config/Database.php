@@ -9,7 +9,7 @@ class Database{
     private $host = 'localhost\sqlexpress';
     private $db_name = "MegaProductionBDD";
     private $username = "MegaProduction_Admin";
-    private $password = "Not24Get";
+    private $password = "0000";
     public $connection;
     
     /**

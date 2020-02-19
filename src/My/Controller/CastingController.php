@@ -137,7 +137,7 @@ class CastingController {
             LEFT JOIN Domaine
             ON Metier.Domaine = Domaine.Identifiant
             
-            ORDER BY Casting.Identifiant ASC
+            ORDER BY Casting.Date_Debut_Publication DESC
             OFFSET :limite ROWS FETCH NEXT :parPage ROWS ONLY;"
         );
         try{
@@ -519,7 +519,11 @@ class CastingController {
        echo json_encode($castings);
     }
     
-
+    public function getCountCastings(){
+        $castings["castings"] = $this->countItem();
+        
+        echo json_encode($castings);
+    }
  
     
     public function getCastingsSearch($recherche)
