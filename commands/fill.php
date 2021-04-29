@@ -13,7 +13,7 @@ function getConnection() {
         $host = 'localhost\sqlexpress';
         $db_name = "MegaProductionBDD";
         $username = "MegaProduction_Admin";
-        $password = "Not24Get";
+        $password = "motdepasse";
         //new PDO("sqlsrv:Server=localhost;Database=testdb", "UserName", "Password");
         $connection = new PDO("sqlsrv:Server=" . $host . ";Database=" . $db_name, $username, $password, [
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
